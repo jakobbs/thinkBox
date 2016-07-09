@@ -61,7 +61,6 @@ def pl_roll ():
 
     for i in range(PLAYERS):
         PLAYER_ROLLS.append( roll(i) )
-    print PLAYER_ROLLS
     return
 
 #CHECK FUNCTION - checks if the bet is true or false
@@ -179,15 +178,17 @@ def turn_handler ():
 
     return
 
-def end_game ():
-    print 'Lost games: ', GAMES_LOST
-    print 'Lost rounds: ', ROUNDS_LOST
-    print 'Dice left at the end of game :', DICE_WHEN_WIN
 
-def sepquence (lenght):	
+def sepquence (lenght): 
     while lenght > 1:
         lenght += -1
         start ()
+
+    if lenght == 1:
+        print 'Lost games: ', GAMES_LOST
+        print 'Lost rounds: ', ROUNDS_LOST
+        print 'Dice left at the end of game :', DICE_WHEN_WIN
+    
     return
 
 
@@ -207,16 +208,16 @@ def lift ():
             ROUNDS_LOST[lifter] += 1
             DICE_WHEN_WIN.append(DICES)
             INITIATIVE = lifter + 1
-            print 'Game ended'
-            print 'Player ' + str((lifter + 1)) + ' lost the game'
-            end_game ()
+            #print 'Game ended'
+            #print 'Player ' + str((lifter + 1)) + ' lost the game'
+            
 
         else:
             ROUNDS_LOST[lifter] += 1
             DICES[lifter] += -1
             INITIATIVE = lifter + 1
-            print 'Player ' + str((lifter + 1)) + ' lost a round'
-            print DICES
+            #print 'Player ' + str((lifter + 1)) + ' lost a round'
+            #print DICES
             new_round ()
 
     else:
@@ -226,16 +227,16 @@ def lift ():
             ROUNDS_LOST[better] += 1
             DICE_WHEN_WIN.append(DICES)
             INITIATIVE = better + 1
-            print 'Game ended'
-            print 'Player ' + str((better + 1)) + ' lost the game'
-            end_game ()
+            #print 'Game ended'
+            #print 'Player ' + str((better + 1)) + ' lost the game'
+            
 
         else:
             ROUNDS_LOST[better] += 1
             DICES[better] += -1
             INITIATIVE = better + 1
-            print 'Player ' + str((better + 1)) + ' lost a round'
-            print DICES
+            #print 'Player ' + str((better + 1)) + ' lost a round'
+            #print DICES
             new_round ()
     return
 
@@ -244,13 +245,11 @@ def lift ():
 def player_1 ():
     global CURRENT_BET
     if ((DICE_COUNT+1) // 2) < CURRENT_BET[PLAYERS - 1][0]:
-        print 'player 1 lifts'
         lift ()
     else:
         CURRENT_BET[0][0] = CURRENT_BET[PLAYERS - 1][0] + 1
         CURRENT_BET[0][1] = CURRENT_BET[PLAYERS - 1][1]
 
-        print CURRENT_BET
         turn_handler ()
 
     return
@@ -258,14 +257,12 @@ def player_1 ():
 def player_2 ():
     global CURRENT_BET
     if ((DICE_COUNT+1) // 2) < CURRENT_BET[0][0]:
-        print 'player 2 lifts'
         lift ()
     else:
         CURRENT_BET[1][0] = CURRENT_BET[0][0] + 1
         CURRENT_BET[1][1] = random.randint(1, DICE_RANGE)
 
-        print CURRENT_BET
-        turn_handler ()	
+        turn_handler () 
 
     return
 
