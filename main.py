@@ -174,7 +174,10 @@ def turn_handler ():
     global INITIATIVE, TURN, CURRENT_BET
     #initially no bet i made
     bet = None
-    while (bet != "lift"):
+    #Placeholder to indicate invalid bet
+    invalidBet = False
+    #loop while the is no lift, or invalid bet
+    while (bet != "lift" and not invalidBet):
 
         TURN += 1
 
@@ -199,26 +202,37 @@ def turn_handler ():
 
         elif INITIATIVE == 5:
             bet = player_5()
+
+
+
+
+        BETTING_HISTORY[-1][-1].append(bet[:])
         if isValidBet(CURRENT_BET,bet):
             CURRENT_BET = bet[:]
+
         #if bet is not valid, change the current bet to something that is True for sure and lift
         else:
             print "ATTENTIONE der er sket en fejl"
-            CURRENT_BET = [1,1]
-            bet = "lift"
+            lift([1,1])
+            invalidBet = True
 
-        BETTING_HISTORY[-1][-1].append(bet[:])
 
-    lift()
+    #Find the bet to check. "CURRENT_BET" cant be used as it has the value "lift"
+    #the index [-1][-1][-2] is read as from the newest game, take the newest round, and the second newest bet
+    if bet == "lift":
+        lift(BETTING_HISTORY[-1][-1][-2])
+
+
+
     return
 
 
 def sepquence (lenght):
-    while lenght > 1:
+    while lenght > 0:
         lenght += -1
         start ()
 
-    if lenght == 1:
+    if lenght == 0:
         print 'Lost games: ', GAMES_LOST
         print 'Lost rounds: ', ROUNDS_LOST
 
@@ -228,12 +242,11 @@ def sepquence (lenght):
 
 #Handler for finding the winner when a player lifts
 #UNDER CONSTRUCTION
-def lift ():
+def lift (betToCheck):
     global DICES, INITIATIVE
 
-    #Find the bet to check. "CURRENT_BET" cant be used as it has the value "lift"
-    #the index [-1][-1][-2] is read as from the newest game, take the newest round, and the second newest bet
-    betToCheck = BETTING_HISTORY[-1][-1][-2]
+
+
     #"better" is the index-number for the player whose bet has been lifted on and lifter is the index number of the lifter'
     better = (INITIATIVE - 2) % PLAYERS
     lifter = INITIATIVE - 1
@@ -296,4 +309,4 @@ def player_2 ():
 
 
 
-sepquence(4000)
+sepquence(20)
