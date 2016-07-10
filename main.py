@@ -155,38 +155,61 @@ def new_round ():
 
     return
 
+def isValidBet(existing,new):
+    #check if it is a lift
+    if isinstance(new,str):
+        if new == "lift":
+            return True
+    #should be a list with length 2 [amount,name]
+    if isinstance(new,list) and len(new) == 2:
+        if existing[0] < new[0]:
+            return True
+        elif existing[0] == new[0] and existing[1] < new[1]:
+            return True
+    return False
+
+
 #Function the decides whose turn it is and activates that player-algoritm
 def turn_handler ():
-    global INITIATIVE, TURN, ROUND_BETTING_HISTORY
-#If not first round, store betting information
-    if not TURN == 0:
-        BETTING_HISTORY[-1][-1].append(list(CURRENT_BET))
+    global INITIATIVE, TURN, CURRENT_BET
+    #initially no bet i made
+    bet = None
+    while (bet != "lift"):
 
+        TURN += 1
 
-    TURN += 1
+        if TURN > 1:
+            if INITIATIVE == PLAYERS:
+                INITIATIVE = 1
+            else:
+                INITIATIVE += 1
 
-    if TURN > 1:
-        if INITIATIVE == PLAYERS:
-            INITIATIVE = 1
+        #Setting the turn
+        if INITIATIVE == 1:
+            bet = player_1()
+
+        elif INITIATIVE == 2:
+            bet = player_2()
+
+        elif INITIATIVE == 3:
+            bet = player_3()
+
+        elif INITIATIVE == 4:
+            bet = player_4()
+
+        elif INITIATIVE == 5:
+            bet = player_5()
+        if isValidBet(CURRENT_BET,bet):
+            CURRENT_BET = bet[:]
+        #if bet is not valid, change the current bet to something that is True for sure and lift
         else:
-            INITIATIVE += 1
+            print "ATTENTIONE der er sket en fejl"
+            CURRENT_BET = [1,1]
+            bet = "lift"
 
-    #Setting the turn
-    if INITIATIVE == 1:
-        player_1 ()
+        BETTING_HISTORY[-1][-1].append(bet[:])
 
-    elif INITIATIVE == 2:
-        player_2 ()
-
-    elif INITIATIVE == 3:
-        player_3 ()
-
-    elif INITIATIVE == 4:
-        player_4 ()
-
-    elif INITIATIVE == 5:
-        player_5 ()
-
+    lift()
     return
 
 
@@ -198,7 +221,7 @@ def sepquence (lenght):
     if lenght == 1:
         print 'Lost games: ', GAMES_LOST
         print 'Lost rounds: ', ROUNDS_LOST
-        print len(GAME_BETTING_HISTORY)
+
 
     return
 
@@ -208,15 +231,14 @@ def sepquence (lenght):
 def lift ():
     global DICES, INITIATIVE
 
-
-    #round is over, make sure to store betting history
-    BETTING_HISTORY[-1][-1].append("Player " + str(INITIATIVE) + " lifts")
-
+    #Find the bet to check. "CURRENT_BET" cant be used as it has the value "lift"
+    #the index [-1][-1][-2] is read as from the newest game, take the newest round, and the second newest bet
+    betToCheck = BETTING_HISTORY[-1][-1][-2]
     #"better" is the index-number for the player whose bet has been lifted on and lifter is the index number of the lifter'
     better = (INITIATIVE - 2) % PLAYERS
     lifter = INITIATIVE - 1
 
-    if check (CURRENT_BET[0], CURRENT_BET[1],PLAYER_ROLLS):
+    if check (betToCheck[0], betToCheck[1],PLAYER_ROLLS):
         if DICES[lifter] == 1:
             DICES[lifter] += -1
             GAMES_LOST[lifter] += 1
@@ -258,27 +280,20 @@ def lift ():
 
 ####### PLAYER FUNCTIONS #######
 def player_1 ():
-    global CURRENT_BET
+    global CURRENT_BET, INITIATIVE
     if ((DICE_COUNT+1) // 2) < CURRENT_BET[0]:
-        lift ()
+        return "lift"
     else:
-        CURRENT_BET[0] = CURRENT_BET[0] + 1
-        CURRENT_BET[1] = CURRENT_BET[1]
+        return [CURRENT_BET[0] + 1, CURRENT_BET[1]]
 
-        turn_handler ()
-
-    return
 
 def player_2 ():
-    global CURRENT_BET
+    global CURRENT_BET, INITIATIVE
     if ((DICE_COUNT+1) // 2) < CURRENT_BET[0]:
-        lift ()
+        return "lift"
     else:
-        CURRENT_BET[0] = CURRENT_BET[0] + 1
-        CURRENT_BET[1] = random.randint(1, DICE_RANGE)
+        return [CURRENT_BET[0] + 1, random.randint(1, DICE_RANGE)]
 
-        turn_handler ()
 
-    return
 
-sepquence (5)
+sepquence(4000)
