@@ -12,7 +12,7 @@ INITIATIVE = 1
 DICE_COUNT = 0
 CURRENT_BET = []
 TURN = 0
-
+BETTING_HISTORY = []
 
 numbers = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
 
@@ -33,6 +33,7 @@ numbers = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
 GAMES_LOST = [0, 0, 0, 0, 0]
 ROUNDS_LOST = [0, 0, 0, 0, 0]
 DICE_WHEN_WIN = []
+GAME_BETTING_HISTORY = []
 
 
 ####### HELPER FUNCTIONS #######
@@ -47,10 +48,9 @@ def roll (cup):
 #Function to make a list of default bets fitting the amount of players
 def clean_bet ():
     global CURRENT_BET
-    CURRENT_BET = []
+    CURRENT_BET = [0,1]
 
-    for i in range(PLAYERS):
-        CURRENT_BET.append([0,1])
+
     return
 
 #Player roll - Generates a dice roll for each player
@@ -63,20 +63,22 @@ def pl_roll ():
         PLAYER_ROLLS.append( roll(i) )
     return
 
+def checkStair(arr):
+
+    a = sorted(arr)
+    while len(a):
+        if len(a) != a.pop():
+            return False
+    return True
+
 #CHECK FUNCTION - checks if the bet is true or false
-def check (amount, name):
-    Roll = PLAYER_ROLLS
+def check (amount, name,Roll):
     Pool = []
     #Correcting for 'staircase rolls'
-    for i in Roll:
-        if i.sort() == [1, 2, 3, 4]:
-            i = [1, 1, 1, 1, 1]
-        elif i.sort() == [1, 2, 3]:
-            i = i = [1, 1, 1, 1]
-        elif i.sort() == [1, 2]:
-            i = [1, 1, 1]
-        elif i.sort() == [1]:
-            i = [1, 1]
+    for i in range(len(Roll)):
+        roll = Roll[i]
+        if checkStair(roll):
+            Roll[i] = [1 for j in range(len(roll)+1)]
 
     #Pooling all dices together in one list with integers
     for i in Roll:
@@ -117,6 +119,8 @@ def count_dices ():
 def start ():
     global DICES
 
+    #Create placeholder for game historic
+    BETTING_HISTORY.append([])
     #Resetting amount of dices'
     DICES = range(PLAYERS)
     for i in range(PLAYERS):
@@ -129,7 +133,10 @@ def start ():
 
 #Handler for starting new turn
 def new_round ():
-    global TURN
+    global TURN, BETTING_HISTORY
+
+    #Set placeholder for round historic data
+    BETTING_HISTORY[-1].append([])
 
     #Resetting turn count
     TURN = 0
@@ -150,7 +157,11 @@ def new_round ():
 
 #Function the decides whose turn it is and activates that player-algoritm
 def turn_handler ():
-    global INITIATIVE, TURN
+    global INITIATIVE, TURN, ROUND_BETTING_HISTORY
+#If not first round, store betting information
+    if not TURN == 0:
+        BETTING_HISTORY[-1][-1].append(list(CURRENT_BET))
+
 
     TURN += 1
 
@@ -179,7 +190,7 @@ def turn_handler ():
     return
 
 
-def sepquence (lenght): 
+def sepquence (lenght):
     while lenght > 1:
         lenght += -1
         start ()
@@ -187,8 +198,8 @@ def sepquence (lenght):
     if lenght == 1:
         print 'Lost games: ', GAMES_LOST
         print 'Lost rounds: ', ROUNDS_LOST
-        print 'Dice left at the end of game :', DICE_WHEN_WIN
-    
+        print len(GAME_BETTING_HISTORY)
+
     return
 
 
@@ -197,11 +208,15 @@ def sepquence (lenght):
 def lift ():
     global DICES, INITIATIVE
 
+
+    #round is over, make sure to store betting history
+    BETTING_HISTORY[-1][-1].append("Player " + str(INITIATIVE) + " lifts")
+
     #"better" is the index-number for the player whose bet has been lifted on and lifter is the index number of the lifter'
     better = (INITIATIVE - 2) % PLAYERS
     lifter = INITIATIVE - 1
 
-    if check (CURRENT_BET[better][0], CURRENT_BET[better][1]):
+    if check (CURRENT_BET[0], CURRENT_BET[1],PLAYER_ROLLS):
         if DICES[lifter] == 1:
             DICES[lifter] += -1
             GAMES_LOST[lifter] += 1
@@ -210,7 +225,7 @@ def lift ():
             INITIATIVE = lifter + 1
             #print 'Game ended'
             #print 'Player ' + str((lifter + 1)) + ' lost the game'
-            
+
 
         else:
             ROUNDS_LOST[lifter] += 1
@@ -229,7 +244,7 @@ def lift ():
             INITIATIVE = better + 1
             #print 'Game ended'
             #print 'Player ' + str((better + 1)) + ' lost the game'
-            
+
 
         else:
             ROUNDS_LOST[better] += 1
@@ -244,11 +259,11 @@ def lift ():
 ####### PLAYER FUNCTIONS #######
 def player_1 ():
     global CURRENT_BET
-    if ((DICE_COUNT+1) // 2) < CURRENT_BET[PLAYERS - 1][0]:
+    if ((DICE_COUNT+1) // 2) < CURRENT_BET[0]:
         lift ()
     else:
-        CURRENT_BET[0][0] = CURRENT_BET[PLAYERS - 1][0] + 1
-        CURRENT_BET[0][1] = CURRENT_BET[PLAYERS - 1][1]
+        CURRENT_BET[0] = CURRENT_BET[0] + 1
+        CURRENT_BET[1] = CURRENT_BET[1]
 
         turn_handler ()
 
@@ -256,14 +271,14 @@ def player_1 ():
 
 def player_2 ():
     global CURRENT_BET
-    if ((DICE_COUNT+1) // 2) < CURRENT_BET[0][0]:
+    if ((DICE_COUNT+1) // 2) < CURRENT_BET[0]:
         lift ()
     else:
-        CURRENT_BET[1][0] = CURRENT_BET[0][0] + 1
-        CURRENT_BET[1][1] = random.randint(1, DICE_RANGE)
+        CURRENT_BET[0] = CURRENT_BET[0] + 1
+        CURRENT_BET[1] = random.randint(1, DICE_RANGE)
 
-        turn_handler () 
+        turn_handler ()
 
     return
 
-sepquence (40)
+sepquence (5)
