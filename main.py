@@ -12,7 +12,7 @@ INITIATIVE = 1
 DICE_COUNT = 0
 CURRENT_BET = []
 TURN = 0
-BETTING_HISTORY = []
+GAME_HISTORY = []
 
 numbers = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
 
@@ -33,7 +33,6 @@ numbers = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
 GAMES_LOST = [0, 0, 0, 0, 0]
 ROUNDS_LOST = [0, 0, 0, 0, 0]
 DICE_WHEN_WIN = []
-GAME_BETTING_HISTORY = []
 
 
 ####### HELPER FUNCTIONS #######
@@ -120,7 +119,7 @@ def start ():
     global DICES
 
     #Create placeholder for game historic
-    BETTING_HISTORY.append([])
+    GAME_HISTORY.append([])
     #Resetting amount of dices'
     DICES = range(PLAYERS)
     for i in range(PLAYERS):
@@ -133,10 +132,10 @@ def start ():
 
 #Handler for starting new turn
 def new_round ():
-    global TURN, BETTING_HISTORY
+    global TURN, GAME_HISTORY
 
     #Set placeholder for round historic data
-    BETTING_HISTORY[-1].append([])
+    GAME_HISTORY[-1].append({'bets':[],'roll':[]})
 
     #Resetting turn count
     TURN = 0
@@ -149,6 +148,8 @@ def new_round ():
 
     #Make a new roll
     pl_roll ()
+    #after new roll, store data i GAME_HISTORY
+    GAME_HISTORY[-1][-1]['roll']=list(PLAYER_ROLLS)
 
     #Running a new turn
     turn_handler ()
@@ -206,7 +207,7 @@ def turn_handler ():
 
 
 
-        BETTING_HISTORY[-1][-1].append(bet[:])
+        GAME_HISTORY[-1][-1]['bets'].append(bet[:])
         if isValidBet(CURRENT_BET,bet):
             CURRENT_BET = bet[:]
 
@@ -220,7 +221,7 @@ def turn_handler ():
     #Find the bet to check. "CURRENT_BET" cant be used as it has the value "lift"
     #the index [-1][-1][-2] is read as from the newest game, take the newest round, and the second newest bet
     if bet == "lift":
-        lift(BETTING_HISTORY[-1][-1][-2])
+        lift(GAME_HISTORY[-1][-1]['bets'][-2])
 
 
 
@@ -235,7 +236,6 @@ def sepquence (lenght):
     if lenght == 0:
         print 'Lost games: ', GAMES_LOST
         print 'Lost rounds: ', ROUNDS_LOST
-
 
     return
 
